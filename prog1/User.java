@@ -24,6 +24,11 @@ class User {
       this.password = password;
     }
   
+    
+    /** 
+     * Devolve a senha criptografada caso seja solicitada
+     * @return String
+     */
     public String getSHA512() {
       String toReturn = null;
       try {

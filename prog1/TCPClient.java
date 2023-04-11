@@ -1,8 +1,9 @@
 package prog1;
 
 /* 
- * TCPClient: 
- * Descricao: 
+ * TCPClient: Client TCP para estabeler conexao com servidor
+ * Descricao: Tenta estabelecer uma conexão TCP com o servidor, apos isso fica ouvindo os 
+ * comando utilizado e envia ao servidor esperando por respostas.
  * 
  * 
  * Autores:
@@ -26,6 +27,12 @@ import java.util.Scanner;
 
 public class TCPClient {
 
+  
+  /** 
+   * Funcao que obtem o hash de uma string e a retorna
+   * @param password
+   * @return String
+   */
   static String getSHA512(String password) {
     String toReturn = null;
     try {
@@ -84,7 +91,7 @@ public class TCPClient {
 
       /* protocolo de comunicação */
       while (true) {
-        System.out.print("COMANDO: ");
+        System.out.print("> ");
         buffer = reader.nextLine(); // lê mensagem via teclado
 
         out.writeUTF(buffer); // envia a mensagem para o servidor
@@ -109,5 +116,5 @@ public class TCPClient {
         ;
       }
     }
-  } // main
-} // class
+  }
+}

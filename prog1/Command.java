@@ -36,10 +36,18 @@ class Command {
   
     }
   
+    
+    /** 
+     * Padroniza a string para caixa baixa
+     * @param command
+     */
     public void setCommand(String command) {
       this.command = command.toLowerCase();
     }
   
+    /** 
+     * Tratamento do comando CONNECT
+     */
     public String handleConnect() {
       try {
         String[] command_split = command.split(" ");
@@ -59,6 +67,9 @@ class Command {
       }
     }
   
+    /** 
+     * Tratamento do comando PWD
+     */
     public String handlePwd() {
       try {
   
@@ -71,6 +82,9 @@ class Command {
       }
     }
   
+    /** 
+     * Tratamento do comando CHDIR
+     */
     public String handleChdir() {
       try {
         String[] command_split = command.split(" ");
@@ -87,6 +101,9 @@ class Command {
       }
     }
   
+    /** 
+     * Tratamento do comando GETFILES
+     */
     public String handleGetfiles() {
       try {
         File[] listOfFiles = file.listFiles();
@@ -109,6 +126,10 @@ class Command {
         return "-1";
       }
     }
+
+    /** 
+     * Tratamento do comando GETDIRS
+     */
     public String handleGetdirs() {
         try {
           File[] listOfFiles = file.listFiles();

@@ -1,17 +1,27 @@
 package prog1;
 
-import java.io.IOException;
-/**
- * TCPServer: Servidor para conexao TCP com Threads Descricao: Recebe uma
- * conexao, cria uma thread, recebe uma mensagem e finaliza a conexao
+/* 
+ * TCPServer: Servidor TCP
+ * Descricao: Espera conexão e executa a thread cliente
+ * 
+ * Autores:
+ *       Iago Sasaki
+ *       Pedro Acácio
+ * 
+ * Data de Criacao: 06 de abril de 2023
+ * Ultima atualizacao: 11 de abril de 2023
  */
+
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class TCPServer {
 
+  /** 
+   * @param args[]
+   */
   public static void main(String args[]) {
-
     try {
       int serverPort = 6666; // porta do servidor
 
@@ -31,10 +41,10 @@ public class TCPServer {
 
         /* inicializa a thread */
         c.start();
-      } // while
+      }
 
     } catch (IOException e) {
       System.out.println("Listen socket:" + e.getMessage());
-    } // catch
-  } // main
-} // class
+    }
+  }
+}
