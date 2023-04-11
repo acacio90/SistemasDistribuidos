@@ -1,0 +1,4 @@
+- Como compilar
+    - Como executar
+    - Bibliotecas usadas (descrever as não padrões)
+    - Exemplo de uso

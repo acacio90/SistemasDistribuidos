@@ -1,4 +1,4 @@
-package prog1;
+package atividade01;
 
 /* 
  * TCPClient: Client TCP para estabeler conexao com servidor

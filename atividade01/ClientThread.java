@@ -1,9 +1,9 @@
-package prog1;
+package atividade01;
 
 /* 
- * ClientThread: Thread responsavel pela comunicacao
- * Descricao: Rebebe um socket, cria os objetos de leitura e escrita,
- * aguarda msgs clientes e chama o método responsável pelo comando chamado.
+ * ClientThread: Thread de cliente
+ * Descricao: Define a rotina da thread criando os buffers de entrada e saída; e realiza as devidas chamadas
+ * para os comando requisitados
  * 
  * 
  * Autores:
@@ -91,5 +91,5 @@ class ClientThread extends Thread {
         }
       }
       System.out.println("Thread comunicação cliente finalizada.");
-    } // run
+    } 
 }

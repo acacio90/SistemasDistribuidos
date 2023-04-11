@@ -1,4 +1,4 @@
-package prog1;
+package atividade01;
 
 /*
  * User: Classe para lidar com as contas de usuário utilizada no comando CONNECT
