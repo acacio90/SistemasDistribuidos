@@ -1,4 +1,6 @@
-package item1;
+package item2;
+
+import java.io.ByteArrayOutputStream;
 
 /*
  * Command: Classe contendo os tratamentos para cada chamada de um comando conhecido e atributos necessários.
@@ -17,19 +19,15 @@ package item1;
  */
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
 class Command {
 
-    List<User> arrayList = new ArrayList<User>();
-  
-    User user = new User("admin", "1234");
-  
-    User[] Users = { user };
-  
     String command;
-    File file = new File("./");
+    File file = new File("item2/files1/");
     String rootPath = file.getAbsolutePath();
   
     public Command() {
@@ -46,36 +44,34 @@ class Command {
     }
   
     /** 
-     * Tratamento do comando CONNECT
+     * Tratamento do comando ADDFILE
      */
-    public String handleConnect() {
-      try {
-        String[] command_split = command.split(" ");
-        String[] userPassword = command_split[1].split(",");
+    public String handleAddFile(String fileName , byte[] dadosArquivo) {
+      String name = ("item2/files2/"+fileName);
+      File file = new File(name);
 
-        for (int i = 0; i < Users.length; i++) {
-          System.out.println(Users[i].password);
-          if (Users[i].login.equals(userPassword[0]))
-            if (Users[i].comparePassword(userPassword[1]))
-              return "SUCCESS";
-        }
-  
-        return "ERROR";
-      } catch (Exception e) {
-        System.err.println("ERROR: " + e);
-        return "-1";
-      }
-    }
-  
-    /** 
-     * Tratamento do comando PWD
-     */
-    public String handlePwd() {
       try {
-  
-        String t = file.getAbsolutePath();
-  
-        return t;
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] fileBytes = new byte[(int) file.length()];
+        fileInputStream.read(fileBytes);
+
+        // Define o diretório de destino para o arquivo recebido
+        String diretorioDestino = "item2/files1/";
+
+        // Define o caminho completo do arquivo de destino
+        String caminhoCompletoArquivo = diretorioDestino + fileName;
+        System.out.println(caminhoCompletoArquivo);
+        // Cria um objeto FileOutputStream para escrever o arquivo recebido
+        FileOutputStream fileOutputStream = new FileOutputStream(caminhoCompletoArquivo);
+
+        // Escreve os bytes do arquivo recebido no arquivo de saída
+        // int tamanhoDadosArquivo = mensagemBytes.length - 500;
+        fileOutputStream.write(dadosArquivo);
+
+        // Fecha o objeto FileOutputStream
+        fileOutputStream.close();
+
+        return "1";
       } catch (Exception e) {
         System.err.println("ERRO: " + e);
         return "-1";
@@ -104,7 +100,7 @@ class Command {
     /** 
      * Tratamento do comando GETFILES
      */
-    public String handleGetfiles() {
+    public String handleGetFileList() {
       try {
         File[] listOfFiles = file.listFiles();
         int num = 0;

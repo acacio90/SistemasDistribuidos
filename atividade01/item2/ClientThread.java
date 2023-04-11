@@ -1,4 +1,6 @@
-package item1;
+package item2;
+
+import java.io.ByteArrayInputStream;
 
 /* 
  * ClientThread: Thread de cliente
@@ -41,38 +43,51 @@ class ClientThread extends Thread {
     public void run() {
       try {
         Command c = new Command();
-        String buffer = "";
         while (true) {
-          buffer = in.readUTF(); /* aguarda o envio de dados */
-  
-          System.out.println("Cliente disse: " + buffer);
-          c.setCommand(buffer);
+          byte[] mensagemBytes = new byte[500];
+          int tamanhoMensagem = in.read(mensagemBytes);
+          ByteArrayInputStream mensagem = new ByteArrayInputStream(mensagemBytes);
+          
+          byte tipoMensagem = (byte) mensagem.read();
+          byte codigoComando = (byte) mensagem.read();
+          byte tamanhoNomeArquivo = (byte) mensagem.read();
+          byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];
+          mensagem.read(nomeArquivoBytes, 0, tamanhoNomeArquivo);
+          String nomeArquivo = new String(nomeArquivoBytes);
+          byte[] dadosArquivo = new byte[500];
+          mensagem.read(dadosArquivo);
+
+          System.out.println(tipoMensagem);
+          System.out.println(codigoComando);
+          System.out.println(tamanhoMensagem);
+          System.out.println(nomeArquivo);
+          System.out.println(dadosArquivo);
+
+          // System.out.println("Cliente disse: " + buffer);
+          // c.setCommand();
           // Split no buffer
-          String[] c_split = buffer.split(" ");
+          // String[] c_split = buffer.split(" ");
   
-          switch(c_split[0]) {
-            case "CONNECT":
-                buffer = c.handleConnect();
+          switch(codigoComando) {
+            case 1:
+                c.handleAddFile(nomeArquivo, dadosArquivo);
                 break;
-            case "PWD":
-                buffer = c.handlePwd();
-                break;
-            case "CHDIR":
-                buffer = c.handleChdir();
-                break;
-            case "GETFILES":
-                buffer = c.handleGetfiles();
-                break;
-            case "GETDIRS":
-                buffer = c.handleGetdirs();
-                break;
-            case "EXIT":
-                break;
-            default:
-                break;
+            // case "DELETE":
+            //     // buffer = c.handlePwd();
+            //     break;
+            // case "GETFILESLIST":
+            //     buffer = c.handleGetFileList();
+            //     break;
+            // case "GETFILE":
+            //     // buffer = c.handlePwd();
+            //     break;
+            // case "EXIT":
+            //     break;
+            // default:
+            //     break;
         }
   
-          out.writeUTF(buffer);
+          // out.writeUTF(buffer);
         }
       } catch (EOFException eofe) {
         System.out.println("EOF: " + eofe.getMessage());
