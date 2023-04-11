@@ -1,4 +1,4 @@
-package atividade01;
+package atividade01.item1;
 
 /* 
  * TCPClient: Client TCP para estabeler conexao com servidor

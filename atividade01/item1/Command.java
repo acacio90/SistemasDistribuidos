@@ -1,4 +1,4 @@
-package atividade01;
+package atividade01.item1;
 
 /*
  * Command: Classe contendo os tratamentos para cada chamada de um comando conhecido e atributos necessários.
