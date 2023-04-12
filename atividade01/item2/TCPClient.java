@@ -1,6 +1,8 @@
 package item2;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Console;
 
 /* 
  * TCPClient: Client TCP para estabeler conexao com servidor
@@ -58,10 +60,10 @@ public class TCPClient {
               res = handleAddFile(c_split[1], clientSocket);
               break;
           case "DELETE":
-              // buffer = c.handlePwd();
+              res = handleDelete(c_split[1], clientSocket);
               break;
           case "GETFILESLIST":
-              // buffer = c.handleGetFileList();
+              res = handleGetFilesList(clientSocket);
               break;
           case "GETFILE":
               // buffer = c.handlePwd();
@@ -75,8 +77,33 @@ public class TCPClient {
         if (cmd.equals("PARAR"))
           break;
 
-        cmd = in.readUTF(); // aguarda resposta "do servidor
-        System.out.println(cmd);
+        byte[] mensagemBytes = new byte[500];
+        int tamanhoMensagem = in.read(mensagemBytes);
+        ByteArrayInputStream mensagem = new ByteArrayInputStream(mensagemBytes);
+          
+        byte tipoMensagem = (byte) mensagem.read();
+        byte codigoComando = (byte) mensagem.read();
+        byte status = (byte) mensagem.read();
+        if(codigoComando == 3){
+          byte tamanhoVetor = (byte) mensagem.read();
+          for(int i=0; i<tamanhoVetor; i++){
+            // Lê o tamanho do nome do arquivo
+            int tamanhoNome = mensagem.read();
+
+            // Cria um buffer para armazenar o nome do arquivo
+            byte[] nomeArquivoBytes = new byte[tamanhoNome];
+
+            // Lê o nome do arquivo
+            mensagem.read(nomeArquivoBytes);
+
+            // Converte o nome do arquivo para uma string
+            String nomeArquivo = new String(nomeArquivoBytes);
+
+            // Exibe o nome do arquivo
+            System.out.println("Arquivo " + (i+1) + ": " + nomeArquivo);
+          }
+        }
+        System.out.println(status);
       }
     } catch (UnknownHostException ue) {
       System.out.println("Socket:" + ue.getMessage());
@@ -113,6 +140,40 @@ public class TCPClient {
 
       OutputStream outputStream = socket.getOutputStream();
 
+      outputStream.write(mensagemBytes);
+      return "1";
+
+    } catch (Exception e) {
+      return "-1";
+    }
+  }
+
+  public static String handleDelete(String fileName, Socket socket) {
+    ByteArrayOutputStream message = new ByteArrayOutputStream();
+    String name = ("item1/files2/"+fileName);
+    File file = new File(name);
+    try {
+      message.write(0x01); // mensagem tipo 1
+      message.write(0x03); // comando 2
+      message.write(file.getName().length()); // tamanho do nome do arquivo
+      message.write(file.getName().getBytes()); // nome do arquivo em bytes
+      byte[] mensagemBytes = message.toByteArray();
+      OutputStream outputStream = socket.getOutputStream();
+      outputStream.write(mensagemBytes);
+      return "1";
+
+    } catch (Exception e) {
+      return "-1";
+    }
+  }
+
+  public static String handleGetFilesList(Socket socket) {
+    ByteArrayOutputStream message = new ByteArrayOutputStream();
+    try {
+      message.write(0x01); // mensagem tipo 1
+      message.write(0x03); // comando 2
+      byte[] mensagemBytes = message.toByteArray();
+      OutputStream outputStream = socket.getOutputStream();
       outputStream.write(mensagemBytes);
       return "1";
 

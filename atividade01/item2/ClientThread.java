@@ -35,8 +35,8 @@ class ClientThread extends Thread {
         out = new DataOutputStream(clientSocket.getOutputStream());
       } catch (IOException ioe) {
         System.out.println("Connection:" + ioe.getMessage());
-      } // catch
-    } // construtor
+      } 
+    } 
   
     /* metodo executado ao iniciar a thread - start() */
     @Override
@@ -50,34 +50,28 @@ class ClientThread extends Thread {
           
           byte tipoMensagem = (byte) mensagem.read();
           byte codigoComando = (byte) mensagem.read();
+          
           byte tamanhoNomeArquivo = (byte) mensagem.read();
           byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];
           mensagem.read(nomeArquivoBytes, 0, tamanhoNomeArquivo);
           String nomeArquivo = new String(nomeArquivoBytes);
-          byte[] dadosArquivo = new byte[500];
-          mensagem.read(dadosArquivo);
-
           System.out.println(tipoMensagem);
           System.out.println(codigoComando);
-          System.out.println(tamanhoMensagem);
-          System.out.println(nomeArquivo);
-          System.out.println(dadosArquivo);
+          System.out.println(tamanhoNomeArquivo);
 
-          // System.out.println("Cliente disse: " + buffer);
-          // c.setCommand();
-          // Split no buffer
-          // String[] c_split = buffer.split(" ");
-  
+          
           switch(codigoComando) {
             case 1:
-                c.handleAddFile(nomeArquivo, dadosArquivo);
+                byte[] dadosArquivo = new byte[500];
+                mensagem.read(dadosArquivo);
+                out.write(c.handleAddFile(nomeArquivo, dadosArquivo));
                 break;
-            // case "DELETE":
-            //     // buffer = c.handlePwd();
-            //     break;
-            // case "GETFILESLIST":
-            //     buffer = c.handleGetFileList();
-            //     break;
+            case 2:
+                out.write(c.handleDelete(nomeArquivo));
+                break;
+            case 3:
+                out.write(c.handleGetFilesList());
+                break;
             // case "GETFILE":
             //     // buffer = c.handlePwd();
             //     break;

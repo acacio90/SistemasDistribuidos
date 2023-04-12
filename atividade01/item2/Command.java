@@ -46,9 +46,10 @@ class Command {
     /** 
      * Tratamento do comando ADDFILE
      */
-    public String handleAddFile(String fileName , byte[] dadosArquivo) {
+    public byte[] handleAddFile(String fileName , byte[] dadosArquivo) {
       String name = ("item2/files2/"+fileName);
       File file = new File(name);
+      ByteArrayOutputStream message = new ByteArrayOutputStream();
 
       try {
         FileInputStream fileInputStream = new FileInputStream(file);
@@ -70,80 +71,87 @@ class Command {
 
         // Fecha o objeto FileOutputStream
         fileOutputStream.close();
+        
+        message.write(0x02); // mensagem tipo 2
+        message.write(0x01); // comando 1
+        message.write(0x01); // Status 1 sucesso
+        byte[] mensagemBytes = message.toByteArray();
 
-        return "1";
+        return mensagemBytes;
       } catch (Exception e) {
-        System.err.println("ERRO: " + e);
-        return "-1";
+        message.write(0x02); // mensagem tipo 2
+        message.write(0x01); // comando 1
+        message.write(0x02); // Status 2 error
+        byte[] mensagemBytes = message.toByteArray();
+        return mensagemBytes;
       }
-    }
-  
-    /** 
-     * Tratamento do comando CHDIR
-     */
-    public String handleChdir() {
-      try {
-        String[] command_split = command.split(" ");
-        file = new File(command_split[1]);
-  
-        if (!file.exists())
-          throw new Exception("ERRO");
-        System.out.println(command_split[1]);
-  
-        return "SUCCESS";
-  
-      } catch (Exception e) {
-        return "ERROR";
-      }
+
     }
   
     /** 
      * Tratamento do comando GETFILES
      */
-    public String handleGetFileList() {
+    public byte[] handleGetFilesList() {
+      ByteArrayOutputStream message = new ByteArrayOutputStream();
       try {
         File[] listOfFiles = file.listFiles();
         int num = 0;
         String res = new String("");
   
+        
+        message.write(0x02); // mensagem tipo 2
+        message.write(0x03); // comando 1
+        message.write(0x01); // Status 2 error
         for (int i = 0; i < listOfFiles.length; i++) {
           if (listOfFiles[i].isFile()) {
-            res = res.concat(listOfFiles[i].getName() + "\n");
             num++;
           }
-          ;
         }
-  
-        res = "Numero de arquivos: " + num + "\n" + res;
-  
-        return res;
+        message.write(num);
+        for (int i = 0; i < listOfFiles.length; i++) {
+          if (listOfFiles[i].isFile()) {
+            message.write(listOfFiles[i].getName().length());
+            message.write(listOfFiles[i].getName().getBytes());
+            num++;
+          }
+        }
+        byte[] mensagemBytes = message.toByteArray();
+
+        return mensagemBytes;
       } catch (Exception e) {
-        System.err.println("ERRO: " + e);
-        return "-1";
+        message.write(0x02); // mensagem tipo 2
+        message.write(0x03); // comando 1
+        message.write(0x02); // Status 2 error
+        byte[] mensagemBytes = message.toByteArray();
+        return mensagemBytes;
       }
     }
 
-    /** 
-     * Tratamento do comando GETDIRS
-     */
-    public String handleGetdirs() {
-        try {
-          File[] listOfFiles = file.listFiles();
-          int num = 0;
-          String res = new String("");
-    
-          for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isDirectory()) {
-              res = res.concat(listOfFiles[i].getName() + "\n");
-              num++;
-            }
-          }
-    
-          res = "Numero de diretórios: " + num + "\n" + res;
-    
-          return res;
-        } catch (Exception e) {
-          return "ERROR";
-        }
+    public byte[] handleDelete(String fileName) {
+      ByteArrayOutputStream message = new ByteArrayOutputStream();
+      try {
+        // Define o diretório de destino para o arquivo recebido
+        String diretorioDestino = "item2/files1/";
+
+        // Define o caminho completo do arquivo de destino
+        String caminhoCompletoArquivo = diretorioDestino + fileName;
+
+        File file = new File(caminhoCompletoArquivo);
+        file.delete();
+        
+        message.write(0x02); // mensagem tipo 2
+        message.write(0x02); // comando 2
+        message.write(0x01); // Status 1 sucesso
+        byte[] mensagemBytes = message.toByteArray();
+
+        return mensagemBytes;
+      } catch (Exception e) {
+        message.write(0x02); // mensagem tipo 2
+        message.write(0x02); // comando 2
+        message.write(0x02); // Status 2 error
+        byte[] mensagemBytes = message.toByteArray();
+        return mensagemBytes;
       }
+
+    }
 }
