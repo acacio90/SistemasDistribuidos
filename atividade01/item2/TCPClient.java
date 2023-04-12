@@ -66,7 +66,7 @@ public class TCPClient {
               res = handleGetFilesList(clientSocket);
               break;
           case "GETFILE":
-              // buffer = c.handlePwd();
+              res = handleGetFile(c_split[1], clientSocket);
               break;
           case "EXIT":
               break;
@@ -135,6 +135,33 @@ public class TCPClient {
       message.write(file.getName().length()); // tamanho do nome do arquivo
       message.write(file.getName().getBytes()); // nome do arquivo em bytes
       message.write(fileBytes); // dados do arquivo
+
+      byte[] mensagemBytes = message.toByteArray();
+
+      OutputStream outputStream = socket.getOutputStream();
+
+      outputStream.write(mensagemBytes);
+      return "1";
+
+    } catch (Exception e) {
+      return "-1";
+    }
+  }
+
+  public static String handleGetFile(String fileName, Socket socket) {
+    String name = ("item2/files1/"+fileName);
+    File file = new File(name);
+    ByteArrayOutputStream message = new ByteArrayOutputStream();
+
+    try {
+      FileInputStream fileInputStream = new FileInputStream(file);
+      byte[] fileBytes = new byte[(int) file.length()];
+      fileInputStream.read(fileBytes);
+
+      message.write(0x01); // mensagem tipo 1
+      message.write(0x04); // comando 1
+      message.write(file.getName().length()); // tamanho do nome do arquivo
+      message.write(file.getName().getBytes()); // nome do arquivo em bytes
 
       byte[] mensagemBytes = message.toByteArray();
 
