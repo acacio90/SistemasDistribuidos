@@ -23,6 +23,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -103,6 +104,27 @@ public class TCPClient {
             System.out.println("Arquivo " + (i+1) + ": " + nomeArquivo);
           }
         }
+        if(codigoComando==4){
+          int tamanhoNome = mensagem.read();
+          byte[] nomeArquivoBytes = new byte[tamanhoNome];
+          mensagem.read(nomeArquivoBytes);
+          String nomeArquivo = new String(nomeArquivoBytes);
+          String name = ("item2/files2/"+nomeArquivo);
+          System.out.println(name);
+          File file = new File(name);
+          FileInputStream fileInputStream = new FileInputStream(file);
+          byte[] fileBytes = new byte[(int) file.length()];
+          fileInputStream.read(fileBytes);
+          FileOutputStream fileOutputStream = new FileOutputStream(name);
+          // Escreve os bytes do arquivo recebido no arquivo de saída
+          // int tamanhoDadosArquivo = mensagemBytes.length - 500;
+          fileOutputStream.write(fileBytes);
+
+          // Fecha o objeto FileOutputStream
+          fileOutputStream.close();
+          fileInputStream.close();
+
+        }
         System.out.println(status);
       }
     } catch (UnknownHostException ue) {
@@ -150,6 +172,7 @@ public class TCPClient {
 
   public static String handleGetFile(String fileName, Socket socket) {
     String name = ("item2/files1/"+fileName);
+    System.out.println(name);
     File file = new File(name);
     ByteArrayOutputStream message = new ByteArrayOutputStream();
 
@@ -181,7 +204,7 @@ public class TCPClient {
     File file = new File(name);
     try {
       message.write(0x01); // mensagem tipo 1
-      message.write(0x03); // comando 2
+      message.write(0x02); // comando 2
       message.write(file.getName().length()); // tamanho do nome do arquivo
       message.write(file.getName().getBytes()); // nome do arquivo em bytes
       byte[] mensagemBytes = message.toByteArray();

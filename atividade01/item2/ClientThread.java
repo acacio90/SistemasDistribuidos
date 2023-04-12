@@ -58,7 +58,7 @@ class ClientThread extends Thread {
           System.out.println(tipoMensagem);
           System.out.println(codigoComando);
           System.out.println(tamanhoNomeArquivo);
-
+          System.out.println(codigoComando);
           
           switch(codigoComando) {
             case 1:
@@ -72,13 +72,11 @@ class ClientThread extends Thread {
             case 3:
                 out.write(c.handleGetFilesList());
                 break;
-            // case "GETFILE":
-            //     // buffer = c.handlePwd();
-            //     break;
-            // case "EXIT":
-            //     break;
-            // default:
-            //     break;
+            case 4:
+                out.write(c.handleGetFile(nomeArquivo));
+                break;
+            default:
+                break;
         }
   
           // out.writeUTF(buffer);

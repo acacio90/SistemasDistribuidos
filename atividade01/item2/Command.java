@@ -1,6 +1,7 @@
 package item2;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 
 /*
  * Command: Classe contendo os tratamentos para cada chamada de um comando conhecido e atributos necessários.
@@ -75,6 +76,36 @@ class Command {
         message.write(0x02); // mensagem tipo 2
         message.write(0x01); // comando 1
         message.write(0x01); // Status 1 sucesso
+        byte[] mensagemBytes = message.toByteArray();
+
+        return mensagemBytes;
+      } catch (Exception e) {
+        message.write(0x02); // mensagem tipo 2
+        message.write(0x01); // comando 1
+        message.write(0x02); // Status 2 error
+        byte[] mensagemBytes = message.toByteArray();
+        return mensagemBytes;
+      }
+
+    }
+
+    public byte[] handleGetFile(String fileName) {
+      String name = ("item2/files1/"+fileName);
+      File file = new File(name);
+      ByteArrayOutputStream message = new ByteArrayOutputStream();
+
+      try {
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] fileBytes = new byte[(int) file.length()];
+        fileInputStream.read(fileBytes);
+
+        message.write(0x02); // mensagem tipo 1
+        message.write(0x04); // comando 1
+        message.write(0x01); // comando 1
+        message.write(file.getName().length()); // tamanho do nome do arquivo
+        message.write(file.getName().getBytes()); // nome do arquivo em bytes
+        message.write(fileBytes); // dados do arquivo
+
         byte[] mensagemBytes = message.toByteArray();
 
         return mensagemBytes;
