@@ -21,6 +21,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 class ClientThread extends Thread {
 
@@ -51,29 +52,25 @@ class ClientThread extends Thread {
           byte tipoMensagem = (byte) mensagem.read();
           byte codigoComando = (byte) mensagem.read();
           
-          byte tamanhoNomeArquivo = (byte) mensagem.read();
-          byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];
-          mensagem.read(nomeArquivoBytes, 0, tamanhoNomeArquivo);
-          String nomeArquivo = new String(nomeArquivoBytes);
+          // byte tamanhoNomeArquivo = (byte) mensagem.read();
+          // byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];
+          // mensagem.read(nomeArquivoBytes, 0, tamanhoNomeArquivo);
+          // String nomeArquivo = new String(nomeArquivoBytes);
           System.out.println(tipoMensagem);
-          System.out.println(codigoComando);
-          System.out.println(tamanhoNomeArquivo);
           System.out.println(codigoComando);
           
           switch(codigoComando) {
             case 1:
-                byte[] dadosArquivo = new byte[500];
-                mensagem.read(dadosArquivo);
-                out.write(c.handleAddFile(nomeArquivo, dadosArquivo));
+                out.write(c.handleAddFile(mensagem));
                 break;
             case 2:
-                out.write(c.handleDelete(nomeArquivo));
+                out.write(c.handleDelete(mensagem));
                 break;
             case 3:
                 out.write(c.handleGetFilesList());
                 break;
             case 4:
-                out.write(c.handleGetFile(nomeArquivo));
+                out.write(c.handleGetFile(mensagem));
                 break;
             default:
                 break;

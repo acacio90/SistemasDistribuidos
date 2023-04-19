@@ -1,5 +1,6 @@
 package item2;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 
@@ -22,6 +23,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
@@ -47,77 +49,73 @@ class Command {
     /** 
      * Tratamento do comando ADDFILE
      */
-    public byte[] handleAddFile(String fileName , byte[] dadosArquivo) {
-      String name = ("item2/files2/"+fileName);
-      File file = new File(name);
-      ByteArrayOutputStream message = new ByteArrayOutputStream();
-
-      try {
-        FileInputStream fileInputStream = new FileInputStream(file);
-        byte[] fileBytes = new byte[(int) file.length()];
-        fileInputStream.read(fileBytes);
-
-        // Define o diretório de destino para o arquivo recebido
-        String diretorioDestino = "item2/files1/";
-
-        // Define o caminho completo do arquivo de destino
-        String caminhoCompletoArquivo = diretorioDestino + fileName;
-        System.out.println(caminhoCompletoArquivo);
-        // Cria um objeto FileOutputStream para escrever o arquivo recebido
-        FileOutputStream fileOutputStream = new FileOutputStream(caminhoCompletoArquivo);
-
-        // Escreve os bytes do arquivo recebido no arquivo de saída
-        // int tamanhoDadosArquivo = mensagemBytes.length - 500;
-        fileOutputStream.write(dadosArquivo);
-
-        // Fecha o objeto FileOutputStream
-        fileOutputStream.close();
-        
-        message.write(0x02); // mensagem tipo 2
-        message.write(0x01); // comando 1
-        message.write(0x01); // Status 1 sucesso
-        byte[] mensagemBytes = message.toByteArray();
-
-        return mensagemBytes;
-      } catch (Exception e) {
-        message.write(0x02); // mensagem tipo 2
-        message.write(0x01); // comando 1
-        message.write(0x02); // Status 2 error
-        byte[] mensagemBytes = message.toByteArray();
-        return mensagemBytes;
+    public byte[] handleAddFile(ByteArrayInputStream message) {
+      byte tamanhoNomeArquivo = (byte) message.read();
+      System.out.println(tamanhoNomeArquivo);
+      byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];
+      message.read(nomeArquivoBytes, 0, tamanhoNomeArquivo);
+      String fileName = new String(nomeArquivoBytes);
+      ByteArrayOutputStream messageOut = new ByteArrayOutputStream();
+  
+      try (FileOutputStream fileOutputStream = new FileOutputStream("item2/files1/" + fileName)) {
+          byte[] buffer = new byte[1024];
+          int bytesRead;
+          while ((bytesRead = message.read(buffer)) != -1) {
+              fileOutputStream.write(buffer, 0, bytesRead);
+          }
+  
+          messageOut.write(0x02); // mensagem tipo 2
+          messageOut.write(0x01); // comando 1
+          messageOut.write(0x01); // Status 1 sucesso
+          byte[] mensagemBytes = messageOut.toByteArray();
+  
+          return mensagemBytes;
+      } catch (IOException e) {
+          e.printStackTrace();
+          messageOut.write(0x02); // mensagem tipo 2
+          messageOut.write(0x01); // comando 1
+          messageOut.write(0x02); // Status 2 error
+          byte[] mensagemBytes = messageOut.toByteArray();
+          return mensagemBytes;
       }
+  }
+  
 
-    }
+  public byte[] handleGetFile(ByteArrayInputStream message) {
+    byte tamanhoNomeArquivo = (byte) message.read();
+    byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];
+    message.read(nomeArquivoBytes, 0, tamanhoNomeArquivo);
+    String fileName = new String(nomeArquivoBytes);
+    ByteArrayOutputStream messageOut = new ByteArrayOutputStream();
 
-    public byte[] handleGetFile(String fileName) {
-      String name = ("item2/files1/"+fileName);
-      File file = new File(name);
-      ByteArrayOutputStream message = new ByteArrayOutputStream();
-
-      try {
-        FileInputStream fileInputStream = new FileInputStream(file);
-        byte[] fileBytes = new byte[(int) file.length()];
-        fileInputStream.read(fileBytes);
-
-        message.write(0x02); // mensagem tipo 1
-        message.write(0x04); // comando 1
-        message.write(0x01); // comando 1
-        message.write(file.getName().length()); // tamanho do nome do arquivo
-        message.write(file.getName().getBytes()); // nome do arquivo em bytes
-        message.write(fileBytes); // dados do arquivo
-
-        byte[] mensagemBytes = message.toByteArray();
-
+    try {
+        File file = new File("item2/files1/" + fileName);
+        if (file.exists()) {
+            FileInputStream fileInputStream = new FileInputStream(file);
+            byte[] fileBytes = new byte[(int) file.length()];
+            fileInputStream.read(fileBytes);
+            fileInputStream.close();
+            messageOut.write(0x02); // mensagem tipo 2
+            messageOut.write(0x04); // comando 3
+            messageOut.write(0x01); // status 1 sucesso
+            messageOut.write(fileBytes);
+        } else {
+            messageOut.write(0x02); // mensagem tipo 2
+            messageOut.write(0x04); // comando 3
+            messageOut.write(0x02); // status 2 error
+        }
+        byte[] mensagemBytes = messageOut.toByteArray();
         return mensagemBytes;
-      } catch (Exception e) {
-        message.write(0x02); // mensagem tipo 2
-        message.write(0x01); // comando 1
-        message.write(0x02); // Status 2 error
-        byte[] mensagemBytes = message.toByteArray();
+    } catch (Exception e) {
+        e.printStackTrace();
+        messageOut.write(0x02); // mensagem tipo 2
+        messageOut.write(0x04); // comando 3
+        messageOut.write(0x02); // status 2 error
+        byte[] mensagemBytes = messageOut.toByteArray();
         return mensagemBytes;
-      }
-
     }
+}
+
   
     /** 
      * Tratamento do comando GETFILES
@@ -158,31 +156,34 @@ class Command {
       }
     }
 
-    public byte[] handleDelete(String fileName) {
-      ByteArrayOutputStream message = new ByteArrayOutputStream();
+    public byte[] handleDelete(ByteArrayInputStream message) {
+      byte tamanhoNomeArquivo = (byte) message.read();
+      byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];
+      message.read(nomeArquivoBytes, 0, tamanhoNomeArquivo);
+      String fileName = new String(nomeArquivoBytes);
+      ByteArrayOutputStream messageOut = new ByteArrayOutputStream();
+  
       try {
-        // Define o diretório de destino para o arquivo recebido
-        String diretorioDestino = "item2/files1/";
-
-        // Define o caminho completo do arquivo de destino
-        String caminhoCompletoArquivo = diretorioDestino + fileName;
-
-        File file = new File(caminhoCompletoArquivo);
-        file.delete();
-        
-        message.write(0x02); // mensagem tipo 2
-        message.write(0x02); // comando 2
-        message.write(0x01); // Status 1 sucesso
-        byte[] mensagemBytes = message.toByteArray();
-
-        return mensagemBytes;
-      } catch (Exception e) {
-        message.write(0x02); // mensagem tipo 2
-        message.write(0x02); // comando 2
-        message.write(0x02); // Status 2 error
-        byte[] mensagemBytes = message.toByteArray();
-        return mensagemBytes;
+          File file = new File("item2/files1/" + fileName);
+          if (file.delete()) {
+              messageOut.write(0x02); // mensagem tipo 2
+              messageOut.write(0x02); // comando 2
+              messageOut.write(0x01); // status 1 sucesso
+          } else {
+              messageOut.write(0x02); // mensagem tipo 2
+              messageOut.write(0x02); // comando 2
+              messageOut.write(0x02); // status 2 error
+          }
+          byte[] mensagemBytes = messageOut.toByteArray();
+          return mensagemBytes;
+      } catch (SecurityException e) {
+          e.printStackTrace();
+          messageOut.write(0x02); // mensagem tipo 2
+          messageOut.write(0x02); // comando 2
+          messageOut.write(0x02); // status 2 error
+          byte[] mensagemBytes = messageOut.toByteArray();
+          return mensagemBytes;
       }
-
-    }
+  }
+  
 }
