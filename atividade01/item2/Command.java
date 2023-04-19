@@ -96,7 +96,7 @@ class Command {
             fileInputStream.read(fileBytes);
             fileInputStream.close();
             messageOut.write(0x02); // mensagem tipo 2
-            messageOut.write(0x04); // comando 3
+            messageOut.write(0x04); // comando 4
             messageOut.write(0x01); // status 1 sucesso
             messageOut.write(fileBytes);
         } else {

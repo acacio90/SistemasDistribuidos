@@ -107,15 +107,34 @@ public class TCPClient {
             System.out.println("Arquivo " + (i+1) + ": " + nomeArquivo);
           }
         }else if (codigoComando == 4) {
-          // if (status != 1) {
-              // throw new Exception("Erro ao enviar mensagem para o servidor.");
-          // }
-      
+          ByteArrayOutputStream message = new ByteArrayOutputStream();
+
+          if (status != 1) {
+            throw new Exception("Erro ao enviar mensagem para o servidor.");
+          }
+          System.out.println(codigoComando);
       
           // Lê os bytes do arquivo
           byte[] arquivoBytes = new byte[500];
-          in.readFully(arquivoBytes);
           System.out.println(c_split[1]);
+          try (FileOutputStream fileOutputStream = new FileOutputStream("item2/files1/" + c_split[1])) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = mensagem.read(arquivoBytes)) != -1) {
+                fileOutputStream.write(buffer, 0, bytesRead);
+            }
+    
+            message.write(0x02); // mensagem tipo 2
+            message.write(0x01); // comando 1
+            message.write(0x01); // Status 1 sucesso
+            byte[] messageOut = message.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            message.write(0x02); // mensagem tipo 2
+            message.write(0x01); // comando 1
+            message.write(0x02); // Status 2 error
+            byte[] messageOut = message.toByteArray();
+        }
           // Cria o arquivo no disco local
           FileOutputStream fileOutputStream = new FileOutputStream("item2/files2/" + c_split[1]);
           fileOutputStream.write(arquivoBytes);
