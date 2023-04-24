@@ -1,31 +1,27 @@
 package item2;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-
 /*
- * Command: Classe contendo os tratamentos para cada chamada de um comando conhecido e atributos necessários.
- * Comandos Conhecidos: CONNECT
- *                      PWD
- *                      CHDIR
- *                      GETFILES
- *                      GETDIRS
+* Command: Classe contendo os tratamentos para cada chamada de um comando conhecido e atributos necessários.
+* Comandos Conhecidos: ADDFILE
+                       GETFILESLIST
+                       GETFILE
+                       DELETE
  * 
  * Autores:
  *       Iago Sasaki
  *       Pedro Acácio
  * 
  * Data de Criacao: 06 de abril de 2023
- * Ultima atualizacao: 11 de abril de 2023
+ * Ultima atualizacao: 20 de abril de 2023
  */
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.Socket;
+
 
 class Command {
 
@@ -46,8 +42,11 @@ class Command {
       this.command = command.toLowerCase();
     }
   
-    /** 
+
+    /**
      * Tratamento do comando ADDFILE
+     * @param message
+     * @return
      */
     public byte[] handleAddFile(ByteArrayInputStream message) {
       byte tamanhoNomeArquivo = (byte) message.read();
@@ -81,6 +80,11 @@ class Command {
   }
   
 
+    /**
+     * Tratamento do comando GETFILE
+     * @param message
+     * @return
+     */
   public byte[] handleGetFile(ByteArrayInputStream message) {
     byte tamanhoNomeArquivo = (byte) message.read();
     byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];
@@ -97,11 +101,11 @@ class Command {
             fileInputStream.close();
             messageOut.write(0x02); // mensagem tipo 2
             messageOut.write(0x04); // comando 4
-            messageOut.write(0x01); // status 1 sucesso
+            messageOut.write(0x01); // status 1 success
             messageOut.write(fileBytes);
         } else {
             messageOut.write(0x02); // mensagem tipo 2
-            messageOut.write(0x04); // comando 3
+            messageOut.write(0x04); // comando 4
             messageOut.write(0x02); // status 2 error
         }
         byte[] mensagemBytes = messageOut.toByteArray();
@@ -109,28 +113,25 @@ class Command {
     } catch (Exception e) {
         e.printStackTrace();
         messageOut.write(0x02); // mensagem tipo 2
-        messageOut.write(0x04); // comando 3
+        messageOut.write(0x04); // comando 4
         messageOut.write(0x02); // status 2 error
         byte[] mensagemBytes = messageOut.toByteArray();
         return mensagemBytes;
     }
 }
 
-  
-    /** 
-     * Tratamento do comando GETFILES
+    /**
+     * Tratamento do comando GETFILESLIST
+     * @return
      */
     public byte[] handleGetFilesList() {
       ByteArrayOutputStream message = new ByteArrayOutputStream();
       try {
         File[] listOfFiles = file.listFiles();
         int num = 0;
-        String res = new String("");
-  
-        
         message.write(0x02); // mensagem tipo 2
-        message.write(0x03); // comando 1
-        message.write(0x01); // Status 2 error
+        message.write(0x03); // comando 3
+        message.write(0x01); // Status 1 success
         for (int i = 0; i < listOfFiles.length; i++) {
           if (listOfFiles[i].isFile()) {
             num++;
@@ -149,13 +150,18 @@ class Command {
         return mensagemBytes;
       } catch (Exception e) {
         message.write(0x02); // mensagem tipo 2
-        message.write(0x03); // comando 1
+        message.write(0x03); // comando 3
         message.write(0x02); // Status 2 error
         byte[] mensagemBytes = message.toByteArray();
         return mensagemBytes;
       }
     }
 
+    /**
+     * Tratamento do comando DELETE
+     * @param message
+     * @return
+     */
     public byte[] handleDelete(ByteArrayInputStream message) {
       byte tamanhoNomeArquivo = (byte) message.read();
       byte[] nomeArquivoBytes = new byte[tamanhoNomeArquivo];

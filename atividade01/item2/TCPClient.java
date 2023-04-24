@@ -2,7 +2,6 @@ package item2;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.Console;
 
 /* 
  * TCPClient: Client TCP para estabeler conexao com servidor
@@ -15,7 +14,7 @@ import java.io.Console;
  *       Pedro Acácio
  * 
  * Data de Criacao: 06 de abril de 2023
- * Ultima atualizacao: 11 de abril de 2023
+ * Ultima atualizacao: 20 de abril de 2023
  */
 
 import java.io.DataInputStream;
@@ -25,15 +24,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class TCPClient {
+  
+  /** 
+   * @param args[]
+   * @throws Exception
+   */
   public static void main(String args[]) throws Exception {
     Socket clientSocket = null; // socket do cliente
     Scanner reader = new Scanner(System.in); // ler mensagens via teclado
@@ -77,9 +79,7 @@ public class TCPClient {
               break;
       }
 
-        if (cmd.equals("PARAR"))
-          break;
-
+      if(res == "1"){
         byte[] mensagemBytes = new byte[500];
         int tamanhoMensagem = in.read(mensagemBytes);
         ByteArrayInputStream mensagem = new ByteArrayInputStream(mensagemBytes);
@@ -118,7 +118,7 @@ public class TCPClient {
           byte[] arquivoBytes = new byte[500];
           System.out.println(c_split[1]);
           try (FileOutputStream fileOutputStream = new FileOutputStream("item2/files1/" + c_split[1])) {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[500];
             int bytesRead;
             while ((bytesRead = mensagem.read(arquivoBytes)) != -1) {
                 fileOutputStream.write(buffer, 0, bytesRead);
@@ -127,23 +127,20 @@ public class TCPClient {
             message.write(0x02); // mensagem tipo 2
             message.write(0x01); // comando 1
             message.write(0x01); // Status 1 sucesso
-            byte[] messageOut = message.toByteArray();
-        } catch (IOException e) {
+          } catch (IOException e) {
             e.printStackTrace();
             message.write(0x02); // mensagem tipo 2
             message.write(0x01); // comando 1
             message.write(0x02); // Status 2 error
-            byte[] messageOut = message.toByteArray();
-        }
+          }
           // Cria o arquivo no disco local
           FileOutputStream fileOutputStream = new FileOutputStream("item2/files2/" + c_split[1]);
           fileOutputStream.write(arquivoBytes);
           fileOutputStream.close();
-      
-          System.out.println("Arquivo " + c_split[1] + " recebido com sucesso!");
+        }
       }
       
-        System.out.println(status);
+        System.out.println(res);
       }
     } catch (UnknownHostException ue) {
       System.out.println("Socket:" + ue.getMessage());
@@ -160,6 +157,14 @@ public class TCPClient {
       }
     }
   }
+
+  
+  /** 
+   * Método para realizar o tratamento e elaboração dos bytes para o comando ADDFILE
+   * @param fileName
+   * @param socket
+   * @return String
+   */
   public static String handleAddFile(String fileName, Socket socket) {
     String name = ("item2/files2/"+fileName);
     File file = new File(name);
@@ -188,6 +193,60 @@ public class TCPClient {
     }
   }
 
+  
+  /** 
+   * Método para realizar o tratamento e elaboração dos bytes para o comando DELETE
+   * @param fileName
+   * @param socket
+   * @return String
+   */
+  public static String handleDelete(String fileName, Socket socket) {
+    ByteArrayOutputStream message = new ByteArrayOutputStream();
+    String name = ("item1/files2/"+fileName);
+    File file = new File(name);
+    try {
+      message.write(0x01); // mensagem tipo 1
+      message.write(0x02); // comando 2
+      message.write(file.getName().length()); // tamanho do nome do arquivo
+      message.write(file.getName().getBytes()); // nome do arquivo em bytes
+      byte[] mensagemBytes = message.toByteArray();
+      OutputStream outputStream = socket.getOutputStream();
+      outputStream.write(mensagemBytes);
+      return "1";
+  
+    } catch (Exception e) {
+      return "-1";
+    }
+  }
+  
+  
+  /** 
+   * Método para realizar o tratamento e elaboração dos bytes para o comando GETFILESLIST
+   * @param socket
+   * @return String
+   */
+  public static String handleGetFilesList(Socket socket) {
+    ByteArrayOutputStream message = new ByteArrayOutputStream();
+    try {
+      message.write(0x01); // mensagem tipo 1
+      message.write(0x03); // comando 3
+      byte[] mensagemBytes = message.toByteArray();
+      OutputStream outputStream = socket.getOutputStream();
+      outputStream.write(mensagemBytes);
+      return "1";
+  
+    } catch (Exception e) {
+      return "-1";
+    }
+  }
+
+  
+  /** 
+   * Método para realizar o tratamento e elaboração dos bytes para o comando GETFILE
+   * @param fileName
+   * @param socket
+   * @return String
+   */
   public static String handleGetFile(String fileName, Socket socket) {
     try {
         String filePath = "item2/files1/" + fileName;
@@ -208,43 +267,7 @@ public class TCPClient {
         outputStream.write(messageOut.toByteArray());
         return "1";
     } catch (Exception e) {
-        System.out.println("Erro ao baixar o arquivo " + fileName + ": " + e.getMessage());
-        return "-1";
-    }
-}
-
-
-
-  public static String handleDelete(String fileName, Socket socket) {
-    ByteArrayOutputStream message = new ByteArrayOutputStream();
-    String name = ("item1/files2/"+fileName);
-    File file = new File(name);
-    try {
-      message.write(0x01); // mensagem tipo 1
-      message.write(0x02); // comando 2
-      message.write(file.getName().length()); // tamanho do nome do arquivo
-      message.write(file.getName().getBytes()); // nome do arquivo em bytes
-      byte[] mensagemBytes = message.toByteArray();
-      OutputStream outputStream = socket.getOutputStream();
-      outputStream.write(mensagemBytes);
-      return "1";
-
-    } catch (Exception e) {
-      return "-1";
-    }
-  }
-
-  public static String handleGetFilesList(Socket socket) {
-    ByteArrayOutputStream message = new ByteArrayOutputStream();
-    try {
-      message.write(0x01); // mensagem tipo 1
-      message.write(0x03); // comando 2
-      byte[] mensagemBytes = message.toByteArray();
-      OutputStream outputStream = socket.getOutputStream();
-      outputStream.write(mensagemBytes);
-      return "1";
-
-    } catch (Exception e) {
+      System.out.println("Erro ao baixar o arquivo " + fileName + ": " + e.getMessage());
       return "-1";
     }
   }

@@ -1,27 +1,25 @@
 package item2;
 
-import java.io.ByteArrayInputStream;
-
 /* 
- * ClientThread: Thread de cliente
- * Descricao: Define a rotina da thread criando os buffers de entrada e saída; e realiza as devidas chamadas
- * para os comando requisitados
- * 
- * 
- * Autores:
- *       Iago Sasaki
- *       Pedro Acácio
- * 
- * Data de Criacao: 06 de abril de 2023
- * Ultima atualizacao: 11 de abril de 2023
- */
+* ClientThread: Thread de cliente
+* Descricao: Define a rotina da thread criando os buffers de entrada e saída; e realiza as devidas chamadas
+* para os comando requisitados
+* 
+* 
+* Autores:
+*       Iago Sasaki
+*       Pedro Acácio
+* 
+* Data de Criacao: 06 de abril de 2023
+* Ultima atualizacao: 20 de abril de 2023
+*/
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 class ClientThread extends Thread {
 
