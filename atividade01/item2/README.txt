@@ -1,5 +1,5 @@
     - Como compilar
-        - javac atividade01/item1/*.java
+        - javac atividade01/item2/*.java
 
     - Como executar
         Para iniciar o servidor
@@ -11,23 +11,21 @@
         Buffers de entrada e saída
         - DataInputStream
         - DataOutputStream
+        - ByteArrayInputStream (Transmissão de dados via array de bytes)
+        - ByteArrayOutputStream
+
+        Arquivos
+        - File
+        - FileInputStream
+        - FileOutputStream
 
         Sockets e threads
         - InetAddress
         - Socket
 
-        SHA-512
-        - MessageDigest
-        - BigInteger
-
-        Array
-        - ArrayList
-        - List
-
     - Exemplo de uso
-        - CONNECT admin,1234
-        - PWD
-        - CHDIR teste
-        - GETDIRS
-        - CHDIR teste
-        - GETFILES 
+        - ADDFILE teste.txt
+        - GETFILESLIST
+        - GETFILE teste2.txt
+        - DELETE teste2.txt
+        - DELETE teste.txt
